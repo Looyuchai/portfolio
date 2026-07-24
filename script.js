@@ -1,44 +1,84 @@
-const body = document.body;
-const themeToggle = document.getElementById("themeToggle");
-const menuToggle = document.getElementById("menuToggle");
-const mainNav = document.getElementById("mainNav");
-const savedTheme = localStorage.getItem("portfolio-theme");
+document.addEventListener("DOMContentLoaded", () => {
+  const body = document.body;
+  const themeToggle = document.getElementById("themeToggle");
+  const menuToggle = document.getElementById("menuToggle");
+  const mainNav = document.getElementById("mainNav");
+  const yearElement = document.getElementById("year");
 
-if (savedTheme === "dark") {
-  body.classList.add("dark");
-  themeToggle.textContent = "☀";
-}
+  // Dark mode
+  const savedTheme = localStorage.getItem("portfolio-theme");
 
-themeToggle.addEventListener("click", () => {
-  body.classList.toggle("dark");
-  const isDark = body.classList.contains("dark");
-  themeToggle.textContent = isDark ? "☀" : "☾";
-  localStorage.setItem("portfolio-theme", isDark ? "dark" : "light");
-});
+  if (savedTheme === "dark") {
+    body.classList.add("dark");
 
-menuToggle.addEventListener("click", () => {
-  const isOpen = mainNav.classList.toggle("open");
-  menuToggle.setAttribute("aria-expanded", String(isOpen));
-});
+    if (themeToggle) {
+      themeToggle.textContent = "☀";
+    }
+  }
 
-document.querySelectorAll(".nav a").forEach((link) => {
-  link.addEventListener("click", () => {
-    mainNav.classList.remove("open");
-    menuToggle.setAttribute("aria-expanded", "false");
-  });
-});
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      body.classList.toggle("dark");
 
-const observer = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("visible");
-        observer.unobserve(entry.target);
-      }
+      const isDark = body.classList.contains("dark");
+
+      themeToggle.textContent = isDark ? "☀" : "☾";
+
+      localStorage.setItem(
+        "portfolio-theme",
+        isDark ? "dark" : "light"
+      );
     });
-  },
-  { threshold: 0.12 }
-);
+  }
 
-document.querySelectorAll(".reveal").forEach((element) => observer.observe(element));
-document.getElementById("year").textContent = new Date().getFullYear();
+  // Mobile navigation
+  if (menuToggle && mainNav) {
+    menuToggle.addEventListener("click", () => {
+      const isOpen = mainNav.classList.toggle("open");
+
+      menuToggle.setAttribute(
+        "aria-expanded",
+        String(isOpen)
+      );
+    });
+
+    document.querySelectorAll(".nav a").forEach((link) => {
+      link.addEventListener("click", () => {
+        mainNav.classList.remove("open");
+        menuToggle.setAttribute("aria-expanded", "false");
+      });
+    });
+  }
+
+  // Reveal animation
+  const revealElements = document.querySelectorAll(".reveal");
+
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+      (entries, observerInstance) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            observerInstance.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.12
+      }
+    );
+
+    revealElements.forEach((element) => {
+      observer.observe(element);
+    });
+  } else {
+    revealElements.forEach((element) => {
+      element.classList.add("visible");
+    });
+  }
+
+  // Footer year
+  if (yearElement) {
+    yearElement.textContent = new Date().getFullYear();
+  }
+});
